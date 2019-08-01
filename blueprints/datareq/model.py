@@ -22,4 +22,4 @@ class Datareqs(db.Model):
         self.per_page = per_page
         self.keywords = keywords 
     def __repr__(self):
-        return '<User %r>' % self.id
+        return '<Datareq %r>' % self.id

@@ -1,23 +1,24 @@
 from flask import Blueprint
-from flask_restful import Resource, reqparse, Api
+from flask_restful import Resource, reqparse, Api, marshal
 import requests, json
 from flask_jwt_extended import jwt_required
 from blueprints.datareq.model import Datareqs
+from blueprints import db, app
 
-bp_weather = Blueprint('weather', __name__)
-api = Api(bp_weather)
+bp_apiluar = Blueprint('apiluar', __name__)
+api = Api(bp_apiluar)
 
 class BestPersonalizedRecommendation(Resource):
     wio_host = 'https://api.weatherbit.io/v2.0'
     wio_apikey = '001de4440e814c16bc45197fd601ef9d'
     bl_host = 'https://api.bukalapak.com/v2/products.json'
 
-    @jwt_required
+    # @jwt_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('ip', location='args', default=None)
-        parser.add_argument('gaya', location='args', required=True)
-        parser.add_argument('your_weekend', location='args', required=True)
+        parser.add_argument('gaya',type=str, location='args', required=True)
+        parser.add_argument('your_weekend',type=str, location='args', required=True)
         args = parser.parse_args()
 
         rq = requests.get(self.wio_host + '/ip', params={'ip': args['ip'], 'key': self.wio_apikey})
@@ -27,11 +28,10 @@ class BestPersonalizedRecommendation(Resource):
         rq = requests.get(self.wio_host + '/current', params={'lat': lat, 'lon': lon, 'key': self.wio_apikey})
         current = rq.json()
 
-        code_weather = current['data'][0]['weather']['code']
+        code_weather = int(current['data'][0]['weather']['code'])
         
+        qry = None
         
-        qry = {}        
-
         if code_weather <= 799 or code_weather == 900  :
             if args['gaya'] == 'hype':
                 if args['your_weekend'] == 'olahraga':
@@ -69,7 +69,7 @@ class BestPersonalizedRecommendation(Resource):
         else:
             if args['gaya'] == 'hype':
                 if args['your_weekend'] == 'olahraga':
-                    qry = Datareqs.query.get(16)
+                    qry = Datareqs.query.get(1)
                 elif args['your_weekend'] == 'nongkrong':
                     qry = Datareqs.query.get(17)
                 elif args['your_weekend'] == 'baca':
@@ -100,14 +100,14 @@ class BestPersonalizedRecommendation(Resource):
                     qry = Datareqs.query.get(29)
                 elif args['your_weekend'] == 'outdoor':
                     qry = Datareqs.query.get(30)
-        
+        # return marshal(qry, Datareqs.response_fields), 200
         if qry is None:
             return {'status': 'NOT_FOUND'}, 404
         
         rq = requests.get(self.bl_host + '', params={'page': qry.page, 'per_page': qry.per_page, 'keywords': qry.keywords})
         current = rq.json()
 
-        return {"products": current["products"]}
+        return {"products": current["products"]}, 200
     
         
         

@@ -6,7 +6,7 @@ class Client(db.Model):
     client_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     client_key = db.Column(db.String, unique=True, nullable=True)
     client_secret = db.Column(db.String, unique=True, nullable=True)
-    status = db.Column(sb.Boolean, nullable=False)
+    status = db.Column(db.Boolean, nullable=False)
 
     response_fields = {
         'client_id':fields.Integer,
