@@ -34,7 +34,7 @@ class DatareqResource(Resource):
 
         app.logger.debug('DEBUG : %s', client)
 
-        return marshal(client, Clients.response_fields), 200, {'Content-Type': 'application/json'}
+        return marshal(client, Datareqs.response_fields), 200, {'Content-Type': 'application/json'}
 
     def put(self, id):
         parser = reqparse.RequestParser()
@@ -83,7 +83,7 @@ class DatareqList(Resource):
         qry = Datareqs.query
 
         if args['keywords'] is not None:
-            qry = qry.filter(Books.client_id.contains(args['client_id']))
+            qry = qry.filter(Datareqs.client_id.contains(args['keywords']))
 
         rows = []
         for row in qry.limit(args['rp']).offset(offset).all():
