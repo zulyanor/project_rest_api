@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse, Api, marshal
 import requests, json
 from flask_jwt_extended import jwt_required
 from blueprints.datareq.model import Datareqs
-from blueprints import db, app
+from blueprints import db, app, internal_required
 
 bp_apiluar = Blueprint('apiluar', __name__)
 api = Api(bp_apiluar)
@@ -13,7 +13,8 @@ class BestPersonalizedRecommendation(Resource):
     wio_apikey = '001de4440e814c16bc45197fd601ef9d'
     bl_host = 'https://api.bukalapak.com/v2/products.json'
 
-    # @jwt_required
+    @jwt_required
+    @internal_required
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('ip', location='args', default=None)
@@ -35,41 +36,7 @@ class BestPersonalizedRecommendation(Resource):
         if code_weather <= 799 or code_weather == 900  :
             if args['gaya'] == 'hype':
                 if args['your_weekend'] == 'olahraga':
-                    qry = Datareqs.query.get(1)
-                elif args['your_weekend'] == 'nongkrong':
-                    qry = Datareqs.query.get(2)
-                elif args['your_weekend'] == 'baca':
-                    qry = Datareqs.query.get(3)
-                elif args['your_weekend'] == 'family':
-                    qry = Datareqs.query.get(4)
-                elif args['your_weekend'] == 'outdoor':
-                    qry = Datareqs.query.get(5)
-            elif args['gaya'] == 'kampung' :
-                if args['your_weekend'] == 'olahraga':
-                    qry = Datareqs.query.get(6)
-                elif args['your_weekend'] == 'nongkrong':
-                    qry = Datareqs.query.get(7)
-                elif args['your_weekend'] == 'baca':
-                    qry = Datareqs.query.get(8)
-                elif args['your_weekend'] == 'family':
-                    qry = Datareqs.query.get(9)
-                elif args['your_weekend'] == 'outdoor':
-                    qry = Datareqs.query.get(10)
-            elif args['gaya'] == 'biasa':
-                if args['your_weekend'] == 'olahraga':
-                    qry = Datareqs.query.get(11)
-                elif args['your_weekend'] == 'nongkrong':
-                    qry = Datareqs.query.get(12)
-                elif args['your_weekend'] == 'baca':
-                    qry = Datareqs.query.get(13)
-                elif args['your_weekend'] == 'family':
-                    qry = Datareqs.query.get(14)
-                elif args['your_weekend'] == 'outdoor':
-                    qry = Datareqs.query.get(15)
-        else:
-            if args['gaya'] == 'hype':
-                if args['your_weekend'] == 'olahraga':
-                    qry = Datareqs.query.get(1)
+                    qry = Datareqs.query.get(16)
                 elif args['your_weekend'] == 'nongkrong':
                     qry = Datareqs.query.get(17)
                 elif args['your_weekend'] == 'baca':
@@ -100,6 +67,40 @@ class BestPersonalizedRecommendation(Resource):
                     qry = Datareqs.query.get(29)
                 elif args['your_weekend'] == 'outdoor':
                     qry = Datareqs.query.get(30)
+        else:
+            if args['gaya'] == 'hype':
+                if args['your_weekend'] == 'olahraga':
+                    qry = Datareqs.query.get(1)
+                elif args['your_weekend'] == 'nongkrong':
+                    qry = Datareqs.query.get(2)
+                elif args['your_weekend'] == 'baca':
+                    qry = Datareqs.query.get(3)
+                elif args['your_weekend'] == 'family':
+                    qry = Datareqs.query.get(4)
+                elif args['your_weekend'] == 'outdoor':
+                    qry = Datareqs.query.get(5)
+            elif args['gaya'] == 'kampung' :
+                if args['your_weekend'] == 'olahraga':
+                    qry = Datareqs.query.get(6)
+                elif args['your_weekend'] == 'nongkrong':
+                    qry = Datareqs.query.get(7)
+                elif args['your_weekend'] == 'baca':
+                    qry = Datareqs.query.get(8) 
+                elif args['your_weekend'] == 'family':
+                    qry = Datareqs.query.get(9)
+                elif args['your_weekend'] == 'outdoor':
+                    qry = Datareqs.query.get(10)
+            elif args['gaya'] == 'biasa':
+                if args['your_weekend'] == 'olahraga':
+                    qry = Datareqs.query.get(11)
+                elif args['your_weekend'] == 'nongkrong':
+                    qry = Datareqs.query.get(12)
+                elif args['your_weekend'] == 'baca':
+                    qry = Datareqs.query.get(13)
+                elif args['your_weekend'] == 'family':
+                    qry = Datareqs.query.get(14)
+                elif args['your_weekend'] == 'outdoor':
+                    qry = Datareqs.query.get(15)
         # return marshal(qry, Datareqs.response_fields), 200
         if qry is None:
             return {'status': 'NOT_FOUND'}, 404
@@ -107,7 +108,12 @@ class BestPersonalizedRecommendation(Resource):
         rq = requests.get(self.bl_host + '', params={'page': qry.page, 'per_page': qry.per_page, 'keywords': qry.keywords})
         current = rq.json()
 
-        return {"products": current["products"]}, 200
+        return {
+            "products": [
+                {"price":current["products"][0]['price']},
+                {"category":current["products"][0]['category']}
+            ]
+        }, 200
     
         
         
